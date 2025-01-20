@@ -1,5 +1,5 @@
 {
-    "id": "{F74AA9EF-7B80-4AC8-BE0E-D4C24D8F624B}",
+    "id": "{A91C3136-FEF6-2FA3-E42A-339FD7F02CE5}",
     "name": "Consumption within Timespan List",
     "type": 3,
     "vendor": "",
@@ -9,6 +9,6 @@
     "parentRequirements": [],
     "childRequirements": [],
     "implemented": [],
-    "prefix": "VIZ",
+    "prefix": "VIZList",
     "url": "https://www.symcon.de/en/service/documentation/module-reference/consumption-within-timespan/"
 }
