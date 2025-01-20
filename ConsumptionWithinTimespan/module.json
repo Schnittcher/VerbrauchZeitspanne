@@ -1,10 +1,10 @@
 {
     "id": "{F74AA9EF-7B80-4AC8-BE0E-D4C24D8F624B}",
-    "name": "Consumption within Timespan",
+    "name": "Consumption within Timespan List",
     "type": 3,
     "vendor": "",
     "aliases": [
-        "Consumption within Timespan"
+        "Consumption within Timespan List"
     ],
     "parentRequirements": [],
     "childRequirements": [],

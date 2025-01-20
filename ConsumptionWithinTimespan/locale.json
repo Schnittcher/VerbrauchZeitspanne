@@ -14,7 +14,7 @@
             "Interval": "Intervall",
             "Minutes": "Minuten",
             "Use interval to update": "Intervall zum Aktualisieren nutzen",
-            "Consumption within Timespan": "VerbrauchZeitspanne",
+            "Consumption within Timespan": "VerbrauchZeitspanneList",
             "https://www.symcon.de/en/service/documentation/module-reference/consumption-within-timespan/": "https://www.symcon.de/de/service/dokumentation/modulreferenz/verbrauchzeitspanne/"
         }
     }

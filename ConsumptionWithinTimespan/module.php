@@ -26,6 +26,7 @@ class ConsumptionWithinTimespan extends IPSModule
 
         //Properties
         $this->RegisterPropertyInteger('SourceVariable', 0);
+        $this->RegisterPropertyString('Variables', '{}');
         $this->RegisterPropertyInteger('LevelOfDetail', 0);
         $this->RegisterPropertyBoolean('UseInterval', false);
         $this->RegisterPropertyInteger('Interval', 10);
@@ -123,14 +124,24 @@ class ConsumptionWithinTimespan extends IPSModule
 
     public function Calculate()
     {
+        
         $this->SetInstanceStatus();
+        $Variables = json_decode($this->ReadPropertyString('Variables'), true);
         if ($this->GetStatus() != 102) {
             $this->SetTimerInterval('UpdateTimer', 0);
-            $this->SetValue('Usage', 0);
+            foreach ($Variables as $key => $sourceVariable) {
+                $v = IPS_GetVariable($sourceVariable);
+                $this->SetValue('Usage_'.$v['VariableID'], 0);
+            }
             return;
         }
+
+        foreach ($Variables as $key => $sourceVariable) {
+            $v = IPS_GetVariable($sourceVariable['VariableID']);
+
         $acID = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
-        $variableID = $this->ReadPropertyInteger('SourceVariable');
+        //$variableID = $this->ReadPropertyInteger('SourceVariable');
+        $variableID = $v['VariableID'];
         $levelOfDetail = $this->ReadPropertyInteger('LevelOfDetail');
         $startDate = GetValue($this->GetIDForIdent('StartDate'));
         $endDate = GetValue($this->GetIDForIdent('EndDate'));
@@ -148,7 +159,7 @@ class ConsumptionWithinTimespan extends IPSModule
         }
 
         if (($startDate == $endDate) || ($startDate > $endDate)) {
-            SetValue($this->GetIDForIdent('Usage'), 0);
+            SetValue($this->GetIDForIdent('Usage_'.$v['VariableID']), 0);
             return;
         }
 
@@ -215,13 +226,21 @@ class ConsumptionWithinTimespan extends IPSModule
             $sum += $value['Avg'];
         }
 
-        SetValue($this->GetIDForIdent('Usage'), $sum);
+        SetValue($this->GetIDForIdent('Usage_'.$v['VariableID']), $sum);
+    }
     }
 
     private function SetInstanceStatus()
     {
-        $sourceID = $this->ReadPropertyInteger('SourceVariable');
+        $Variables = json_decode($this->ReadPropertyString('Variables'), true);
+
+        //$sourceID = $this->ReadPropertyInteger('SourceVariable');
         $archiveID = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
+
+        
+        foreach ($Variables as $key => $sourceVariable) {
+            $sourceID = IPS_GetVariable($sourceVariable['VariableID'])['VariableID'];
+
 
         //No variable selected
         if ($sourceID == 0) {
@@ -249,17 +268,22 @@ class ConsumptionWithinTimespan extends IPSModule
             $this->SetStatus(102);
         }
     }
+    }
 
     private function setupInstance()
     {
         $this->SetInstanceStatus();
 
+        $Variables = json_decode($this->ReadPropertyString('Variables'), true);
+
         if ($this->GetStatus() != 102) {
             $this->SetTimerInterval('UpdateTimer', 0);
             return;
         }
-        $sourceVariable = $this->ReadPropertyInteger('SourceVariable');
-        $v = IPS_GetVariable($sourceVariable);
+
+        foreach ($Variables as $key => $sourceVariable) {
+         
+        $v = IPS_GetVariable($sourceVariable['VariableID']);
 
         $sourceProfile = '';
         $sourceProfile = $v['VariableCustomProfile'];
@@ -269,11 +293,11 @@ class ConsumptionWithinTimespan extends IPSModule
 
         switch ($v['VariableType']) {
             case 1: /* Integer */
-                $this->RegisterVariableInteger('Usage', 'Verbrauch', $sourceProfile, 3);
+                $this->RegisterVariableInteger('Usage_'.$v['VariableID'], 'Verbrauch ' . $sourceVariable['Name'], $sourceProfile, 3);
                 break;
 
             case 2: /* Float */
-                $this->RegisterVariableFloat('Usage', 'Verbrauch', $sourceProfile, 3);
+                $this->RegisterVariableFloat('Usage_'.$v['VariableID'], 'Verbrauch '. $sourceVariable['Name'], $sourceProfile, 3);
                 break;
 
             default:
@@ -284,14 +308,15 @@ class ConsumptionWithinTimespan extends IPSModule
         foreach ($this->GetReferenceList() as $referenceID) {
             $this->UnregisterReference($referenceID);
         }
-        if (IPS_VariableExists($sourceVariable)) {
-            $this->RegisterReference($sourceVariable);
+        if (IPS_VariableExists($v['VariableID'])) {
+            $this->RegisterReference($v['VariableID']);
         }
-
+    }
         if ($this->ReadPropertyBoolean('UseInterval')) {
             $this->SetTimerInterval('UpdateTimer', $this->ReadPropertyInteger('Interval') * 1000 * 60);
         } else {
             $this->SetTimerInterval('UpdateTimer', 0);
         }
     }
+
 }
